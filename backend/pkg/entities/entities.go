@@ -1,0 +1,81 @@
+package entities
+
+//DB and geoJSON entities
+//TODO add Object struct , separate objects and problems
+
+import (
+	"github.com/twpayne/go-geom"
+	"github.com/ybru-tech/georm"
+)
+
+type DistrictDTO struct {
+	Type       string `json:"type"`
+	Properties struct {
+		Osm_relation_id int    `json:"osm-relation-id,string"`
+		Name            string `json:"name"`
+		NameRu          string `json:"nameRu"`
+	} `json:"properties"`
+	Geometry struct {
+		Type        string          `json:"type"`
+		Coordinates [][][][]float64 `json:"coordinates"`
+	} `json:"geometry"`
+}
+
+type District struct {
+	DistrictID int                `gorm:"primaryKey;uniqueIndex:idx_distinctid"`
+	NameRU     string             `gorm:"not null"`
+	NameENG    string             `gorm:"not null"`
+	Type       string             `gorm:"not null"`
+	Geom       georm.MultiPolygon `gorm:"type:geometry(MultiPolygon,4326)"`
+
+	Problems []Problem `gorm:"foreignKey:DistrictID;references:DistrictID"`
+}
+
+type Problem struct {
+	ProblemID   int `gorm:"primaryKey;uniqueIndex:idx_problemid"`
+	DistrictID  int
+	Name        string `gorm:"not null"`
+	Description string `gorm:"not null"`
+	ImageURL    string
+	Importance  int    `gorm:"not null"`
+	Status      string `gorm:"not null"`
+}
+
+func MapToDistinct(dto DistrictDTO) *District {
+	return &District{
+		DistrictID: int(dto.Properties.Osm_relation_id),
+		NameRU:     dto.Properties.NameRu,
+		NameENG:    dto.Properties.Name,
+		Type:       dto.Geometry.Type,
+		Geom:       *multiPolygonFromDTO(dto),
+	}
+}
+
+func multiPolygonFromDTO(dto DistrictDTO) *georm.MultiPolygon {
+	mp := geom.NewMultiPolygon(geom.XY)
+
+	for _, polygon := range dto.Geometry.Coordinates {
+		var rings []*geom.LinearRing
+		for _, ring := range polygon {
+			flat := flattenRing(ring)
+			flatRing := geom.NewLinearRingFlat(geom.XY, flat)
+			rings = append(rings, flatRing)
+		}
+		poly := geom.NewPolygon(geom.XY)
+		for _, r := range rings {
+			poly.Push(r)
+		}
+		mp.Push(poly)
+	}
+
+	geormMP := georm.New(mp)
+	return &geormMP
+}
+
+func flattenRing(ring [][]float64) []float64 {
+	flat := []float64{}
+	for _, p := range ring {
+		flat = append(flat, p[0], p[1])
+	}
+	return flat
+}
