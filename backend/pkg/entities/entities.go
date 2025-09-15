@@ -34,11 +34,13 @@ type District struct {
 type Problem struct {
 	ProblemID   int `gorm:"primaryKey;uniqueIndex:idx_problemid"`
 	DistrictID  int
-	Name        string `gorm:"not null"`
-	Description string `gorm:"not null"`
-	ImageURL    string
-	Importance  int    `gorm:"not null"`
-	Status      string `gorm:"not null"`
+	District    District
+	Geom        georm.Point `gorm:"type:geometry(Point,4326)"`
+	Name        string      `gorm:"not null"`
+	Description string      `gorm:"not null"`
+	Importance  int         `gorm:"not null"`
+	Type        string      `gorm:"not null"`
+	Status      string      `gorm:"not null"`
 }
 
 func MapToDistinct(dto DistrictDTO) *District {
@@ -78,4 +80,13 @@ func flattenRing(ring [][]float64) []float64 {
 		flat = append(flat, p[0], p[1])
 	}
 	return flat
+}
+
+type HeatMap struct {
+	Max        int
+	HeatPoints []HeatPoint
+}
+
+type HeatPoint struct {
+	Geom georm.Point `gorm:"type:geometry(Point,4326)"`
 }
