@@ -3,26 +3,34 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/rwrrioe/geomap/backend/pkg/database"
-	"github.com/rwrrioe/geomap/backend/pkg/repository"
+	"github.com/rwrrioe/geomap/backend/pkg/entities"
+	"github.com/rwrrioe/geomap/backend/pkg/service"
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 	db, err := database.DbConnect()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err.Error())
 	}
 	err = database.DbMigrate(db)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err.Error())
 	}
-	dbRepo := repository.NewProblemRepo(db)
-	ans, _ := dbRepo.GetCommonProblemsByDistrict(ctx, 3072807)
-	for _, a := range ans {
-		fmt.Println(a)
+
+	req := entities.CreateProblemRequest{
+		ProblemID:   72,
+		ProblemName: "Test",
+		Description: "test",
+		TypeID:      3,
+		Lat:         76.9457,
+		Lon:         43.2389,
 	}
+
+	service := service.NewProblemService(db)
+
+	service.NewProblem(ctx, req)
 }

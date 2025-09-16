@@ -11,6 +11,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
+	"github.com/rwrrioe/geomap/backend/pkg/repository"
 	"github.com/twpayne/go-geom"
 	"github.com/ybru-tech/georm"
 	"google.golang.org/genai"
@@ -41,7 +42,7 @@ func newProblemsResponse() *ProblemsResponse {
 	return &ProblemsResponse{}
 }
 
-func DbConnect() (*repository.ProblemRepository, error) {
+func DbConnect() (repository.ProblemRepository, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -61,7 +62,7 @@ func DbConnect() (*repository.ProblemRepository, error) {
 }
 
 func DbMigrate(r repository.ProblemRepository) error {
-	r.Db.AutoMigrate(&entities.District{}, &entities.Problem{})
+	r.GetDb().Db.AutoMigrate(&entities.District{}, &entities.Problem{})
 	return nil
 }
 
@@ -176,7 +177,6 @@ ProblemID — это первичный ключ и он не должен по�
 			ProblemID:   p.ProblemID,
 			Name:        p.Name,
 			Description: p.Description,
-			Type:        p.Type,
 			Status:      p.Status,
 			Importance:  p.Importance,
 			Geom:        georm.New(point),

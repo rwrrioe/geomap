@@ -4,6 +4,8 @@ package entities
 //TODO add Object struct , separate objects and problems
 
 import (
+	"fmt"
+
 	"github.com/twpayne/go-geom"
 	"github.com/ybru-tech/georm"
 )
@@ -27,8 +29,8 @@ type District struct {
 	NameENG    string             `gorm:"not null"`
 	Type       string             `gorm:"not null"`
 	Geom       georm.MultiPolygon `gorm:"type:geometry(MultiPolygon,4326)"`
-
-	Problems []Problem `gorm:"foreignKey:DistrictID;references:DistrictID"`
+	Reputation float64
+	Problems   []Problem `gorm:"foreignKey:DistrictID;references:DistrictID"`
 }
 
 type Problem struct {
@@ -39,8 +41,27 @@ type Problem struct {
 	Name        string      `gorm:"not null"`
 	Description string      `gorm:"not null"`
 	Importance  int         `gorm:"not null"`
-	Type        string      `gorm:"not null"`
 	Status      string      `gorm:"not null"`
+}
+
+type ProblemResponseDTO struct {
+	ProblemID   int `gorm:"primaryKey;uniqueIndex:idx_problemid"`
+	DistrictID  int
+	District    District
+	Geom        geom.Point
+	Name        string `gorm:"not null"`
+	Description string `gorm:"not null"`
+	Importance  int    `gorm:"not null"`
+	Status      string `gorm:"not null"`
+}
+
+type CreateProblemRequest struct {
+	ProblemID   int     `json:"name" binding:"required"`
+	ProblemName string  `json:"problem_name" binding:"required"`
+	Description string  `json:"description"`
+	TypeID      int     `json:"type_id" binding:"required"`
+	Lat         float64 `json:"lat" binding:"required"`
+	Lon         float64 `json:"lon" binding:"required"`
 }
 
 func MapToDistinct(dto DistrictDTO) *District {
@@ -82,42 +103,40 @@ func flattenRing(ring [][]float64) []float64 {
 	return flat
 }
 
-
-//HEATMAP ENTITIES
+// HEATMAP ENTITIES
 type HeatMap struct {
 	Max        int
 	HeatPoints []HeatPoint
 }
 
 type HeatPoint struct {
-	Geom georm.Point `gorm:"type:geometry(Point,4326)"`
+	Geom       georm.Point `gorm:"type:geometry(Point,4326)"`
+	Category   int
+	Importance float64
 }
 
-
 type BreefAnswer struct {
-	Breef string `json:"breef_answer"`
-	Status string  `json:"status"`
+	Breef  string `json:"breef_answer"`
+	Status string `json:"status"`
 }
 
 type ExtendedAnswer struct {
 	Extended string `json:"extended_answer"`
-	Status string  `json:"status"`
-}  
-
-type ProblemTypeMap [int]string {
-	1 : "ЖКХ",
-	2 : "Дороги и транспорт",
-	3 : "Гос.сервис",
-	4 : "Прочее",
+	Status   string `json:"status"`
 }
 
+var ProblemTypeMap = map[int]string{
+	1: "ЖКХ",
+	2: "Дороги и транспорт",
+	3: "Гос.сервис",
+	4: "Прочее",
+}
 
 func UnmapProblemType(id int) (string, error) {
-	for _, t := range ProblemTypeMap {
-		if t == id {
-			return ProblemTypeMap[t]
+	for k, _ := range ProblemTypeMap {
+		if k == id {
+			return ProblemTypeMap[k], nil
 		}
-	} else {
-		return _, fmt.Errorf("type key not found ")
 	}
+	return "", fmt.Errorf("type key not found ")
 }
