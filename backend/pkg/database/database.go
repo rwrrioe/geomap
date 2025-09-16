@@ -41,7 +41,7 @@ func newProblemsResponse() *ProblemsResponse {
 	return &ProblemsResponse{}
 }
 
-func DbConnect() (*gorm.DB, error) {
+func DbConnect() (*repository.ProblemRepository, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -56,11 +56,12 @@ func DbConnect() (*gorm.DB, error) {
 
 	dsn := dsnParam
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	return db, err
+	repo := repository.NewProblemRepo(db)
+	return repo, err
 }
 
-func DbMigrate(db *gorm.DB) error {
-	db.AutoMigrate(&entities.District{}, &entities.Problem{})
+func DbMigrate(r repository.ProblemRepository) error {
+	r.Db.AutoMigrate(&entities.District{}, &entities.Problem{})
 	return nil
 }
 

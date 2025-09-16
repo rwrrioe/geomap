@@ -82,6 +82,8 @@ func flattenRing(ring [][]float64) []float64 {
 	return flat
 }
 
+
+//HEATMAP ENTITIES
 type HeatMap struct {
 	Max        int
 	HeatPoints []HeatPoint
@@ -89,4 +91,33 @@ type HeatMap struct {
 
 type HeatPoint struct {
 	Geom georm.Point `gorm:"type:geometry(Point,4326)"`
+}
+
+
+type BreefAnswer struct {
+	Breef string `json:"breef_answer"`
+	Status string  `json:"status"`
+}
+
+type ExtendedAnswer struct {
+	Extended string `json:"extended_answer"`
+	Status string  `json:"status"`
+}  
+
+type ProblemTypeMap [int]string {
+	1 : "ЖКХ",
+	2 : "Дороги и транспорт",
+	3 : "Гос.сервис",
+	4 : "Прочее",
+}
+
+
+func UnmapProblemType(id int) (string, error) {
+	for _, t := range ProblemTypeMap {
+		if t == id {
+			return ProblemTypeMap[t]
+		}
+	} else {
+		return _, fmt.Errorf("type key not found ")
+	}
 }

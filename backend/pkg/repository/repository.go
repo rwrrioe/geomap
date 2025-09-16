@@ -9,11 +9,28 @@ import (
 	"gorm.io/gorm"
 )
 
-type ProblemStat struct {
-	Type  string
-	Count int
+
+type ProblemStatByDistrict struct {
+	TypeID int
+	TypeName string
+	TypeCount int
+	ProblemCount int
+	StatusCount int
+	ImpAvg float64
 }
 
+type ProblemStatByType struct {
+	DistrictID int
+	ProblemCount int
+	StatusCount int
+	ImpAvg float64
+}
+
+type ProblemStatByCity struct {
+	ProblemCount int
+	StatusCount int
+	ImpAvg float64
+}
 type ProblemDTO struct {
 	ProblemID   int
 	Name        string
@@ -38,7 +55,7 @@ func newProblemDTO(p entities.Problem) *ProblemDTO {
 type ProblemRepository interface {
 	GetById(ctx context.Context, id int) (*ProblemDTO, error)
 	ListByDistrict(ctx context.Context, districtID int) ([]*ProblemDTO, error)
-	GetCommonProblemsByDistrict(ctx context.Context, id int) ([]ProblemStat, error)
+	GetCommonProblemsByDistrict(ctx context.Context, id int) ([]*ProblemStatByDistrict, error)
 }
 
 type ProblemRepo struct {
@@ -76,13 +93,16 @@ func (p *ProblemRepo) ListByDistrict(ctx context.Context, id int) ([]*ProblemDTO
 	return dtos, nil
 }
 
-func (p *ProblemRepo) GetCommonProblemsByDistrict(ctx context.Context, id int) ([]ProblemStat, error) {
-	var stats []ProblemStat
+func (p *ProblemRepo) GetAnalysisByDistrict(ctx context.Context, id int) ([]*ProblemStatByDistrict, error) {
+	var stats []*ProblemStat
 	result := p.Db.Raw(
 		`SELECT type, 
-		COUNT(type) AS count
+		COUNT(type) AS count,
+		COUNT(problem_id) AS prb_count
+		AVG(importance) as avg_imp,
+		COUNT(status) as avg_status
 		FROM problems
-		WHERE district_id = ?
+		WHERE district_id = ? AND status = 'solved'
 		GROUP BY type
 		ORDER BY COUNT(type) DESC
 		`, id).Scan(&stats)
@@ -90,5 +110,44 @@ func (p *ProblemRepo) GetCommonProblemsByDistrict(ctx context.Context, id int) (
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return stats, nil
+	return &stats, nil
+}
+
+func(p *ProblemRepo) GetAnalysisByType(ctx context.context, id int) (*[]ProblemStatByType, error) {
+	var statByType []ProblemStatByType
+
+		result := p.Db.Raw(
+		`SELECT district_id,
+		COUNT(problem_id) AS prb_count,
+		AVG(importance) as avg_imp,
+		COUNT(status) as avg_status
+		FROM problems
+		WHERE type_id = ? AND status = 'solved'
+		GROUP BY district_id
+		ORDER BY COUNT(type) DESC
+		`, id).Scan(&stats)
+	
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &stats, nil
+}	
+
+func(p *ProblemRepo) GetAnalysisByCity(ctx context.context) (*ProblemStatByCity, error) {
+	var cityStat ProblemStatByCity
+	result := p.Db.Raw(
+		`
+		COUNT(problem_id) AS prb_count
+		AVG(importance) as avg_imp,
+		COUNT(status) as avg_status
+		FROM problems
+		WHERE status = 'solved'
+		`).Scan(&stats)
+	
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	
+	return &cityStat, nil
 }
