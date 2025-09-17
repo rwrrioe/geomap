@@ -34,25 +34,26 @@ type District struct {
 }
 
 type Problem struct {
-	ProblemID   int `gorm:"primaryKey;uniqueIndex:idx_problemid"`
+	ProblemID   int `gorm:"primaryKey;autoIncrement;uniqueIndex:idx_problemid"`
 	DistrictID  int
 	District    District
 	Geom        georm.Point `gorm:"type:geometry(Point,4326)"`
 	Name        string      `gorm:"not null"`
 	Description string      `gorm:"not null"`
-	Importance  int         `gorm:"not null"`
+	Importance  float64     `gorm:"not null"`
 	Status      string      `gorm:"not null"`
+	TypeId      int         `gorm:"not null"`
 }
 
 type ProblemResponseDTO struct {
-	ProblemID   int `gorm:"primaryKey;uniqueIndex:idx_problemid"`
-	DistrictID  int
-	District    District
-	Geom        geom.Point
-	Name        string `gorm:"not null"`
-	Description string `gorm:"not null"`
-	Importance  int    `gorm:"not null"`
-	Status      string `gorm:"not null"`
+	ProblemID   int         `gorm:"column:problem_id"`
+	DistrictID  int         `gorm:"column:district_id"`
+	District    District    `gorm:"column:district"`
+	Geom        georm.Point `gorm:"column:geom"`
+	Name        string      `gorm:"name"`
+	Description string      `gorm:"description"`
+	Importance  float64     `gorm:"importance"`
+	Status      string      `gorm:"status"`
 }
 
 type CreateProblemRequest struct {
@@ -105,14 +106,23 @@ func flattenRing(ring [][]float64) []float64 {
 
 // HEATMAP ENTITIES
 type HeatMap struct {
-	Max        int
-	HeatPoints []HeatPoint
+	Max        int         `json:"max_points"`
+	HeatPoints []HeatPoint `json:"heat_points"`
 }
 
 type HeatPoint struct {
-	Geom       georm.Point `gorm:"type:geometry(Point,4326)"`
-	Category   int
-	Importance float64
+	Category int   `json:"category"`
+	Point    Point `json:"point"`
+}
+
+type Point struct {
+	Lon        float64 `json:"lon"`
+	Lat        float64 `json:"lat"`
+	Importance float64 `json:"importance"`
+}
+
+func NewHeatpMap() *HeatMap {
+	return &HeatMap{}
 }
 
 type BreefAnswer struct {
@@ -120,9 +130,16 @@ type BreefAnswer struct {
 	Status string `json:"status"`
 }
 
-type ExtendedAnswer struct {
-	Extended string `json:"extended_answer"`
-	Status   string `json:"status"`
+type CachedAnswer struct {
+	AnswerID     int    `gorm:"primaryKey;autoIncrement;-><-:create"`
+	ResponseText string `gorm:"column:response_text"`
+	Status       string `gorm:"column:status"`
+	RequestID    int    `gorm:"column:request_id"`
+}
+
+type ExtendedAIResponse struct {
+	AnswerText string `json:"extended_answer"`
+	Status     string `json:"status"`
 }
 
 var ProblemTypeMap = map[int]string{

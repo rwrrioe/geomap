@@ -4,33 +4,29 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/rwrrioe/geomap/backend/pkg/database"
-	"github.com/rwrrioe/geomap/backend/pkg/entities"
 	"github.com/rwrrioe/geomap/backend/pkg/service"
 )
 
 func main() {
+	r := gin.Default()
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 	db, err := database.DbConnect()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	err = database.DbMigrate(db)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
 
-	req := entities.CreateProblemRequest{
-		ProblemID:   72,
-		ProblemName: "Test",
-		Description: "test",
-		TypeID:      3,
-		Lat:         76.9457,
-		Lon:         43.2389,
-	}
+	r.POST("/bycity", func(c *gin.Context) {
+		aiservice := service.NewAIPredictService(db)
 
-	service := service.NewProblemService(db)
+		analysis, err := aiservice.GetAnalysisByCity(ctx)
+		if err != nil {
+			c.JSON(500, err.Error())
+		}
+		c.JSON(200, analysis)
+	})
 
-	service.NewProblem(ctx, req)
+	r.Run(":8080")
 }

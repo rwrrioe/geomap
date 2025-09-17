@@ -1,5 +1,7 @@
 package service
 
+//TODO ADD cached fast responses improve prompts
+//TODO ADD not found errors
 import (
 	"context"
 	"encoding/json"
@@ -14,12 +16,12 @@ import (
 )
 
 type AIPredictService struct {
-	repo repository.ProblemRepository
+	problemRepo repository.ProblemRepository
 }
 
-func NewAIPredictService(repo repository.ProblemRepository) *AIPredictService {
+func NewAIPredictService(problemRepo repository.ProblemRepository) *AIPredictService {
 	return &AIPredictService{
-		repo: repo,
+		problemRepo: problemRepo,
 	}
 }
 func InitAI(ctx context.Context) (*genai.Client, error) {
@@ -40,19 +42,19 @@ func InitAI(ctx context.Context) (*genai.Client, error) {
 	return client, nil
 }
 
-func (s *AIPredictService) PredictForDistrict(ctx context.Context, districtID int) (*entities.ExtendedAnswer, error) {
-	var extendedAnswer entities.ExtendedAnswer
-	districtStat, err := s.repo.GetAnalysisByDistrict(ctx, districtID)
+func (s *AIPredictService) PredictForDistrict(ctx context.Context, districtID int) error {
+	var extendedAIAnswer entities.ExtendedAIResponse
+	districtStat, err := s.problemRepo.GetAnalysisByDistrict(ctx, districtID)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	cityStat, err := s.repo.GetAnalysisByCity(ctx)
+	cityStat, err := s.problemRepo.GetAnalysisByCity(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	client, err := InitAI(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	config := &genai.GenerateContentConfig{
@@ -82,31 +84,37 @@ imp_avg - среднее по шкале важности проблем в да
 		config,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate AI response:%w", err)
+		return fmt.Errorf("failed to generate AI response:%w", err)
 	}
 
 	fmt.Println("end generating, unmarshalling")
-	if err := json.Unmarshal([]byte(result.Text()), &extendedAnswer); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal AI response:%w", err)
+	if err := json.Unmarshal([]byte(result.Text()), &extendedAIAnswer); err != nil {
+		return fmt.Errorf("failed to unmarshal AI response:%w", err)
 	}
 
-	return &extendedAnswer, nil
+	err = s.problemRepo.CacheAIResponse(ctx, &extendedAIAnswer, districtID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
-func (s *AIPredictService) PredictForType(ctx context.Context, districtID int) (*entities.ExtendedAnswer, error) {
-	var extendedAnswer entities.ExtendedAnswer
-	typeStat, err := s.repo.GetAnalysisByType(ctx, districtID)
+func (s *AIPredictService) PredictForType(ctx context.Context, typeID int) error {
+	var extendedAIAnswer entities.ExtendedAIResponse
+	typeStat, err := s.problemRepo.GetAnalysisByType(ctx, typeID)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	cityStat, err := s.repo.GetAnalysisByCity(ctx)
+	cityStat, err := s.problemRepo.GetAnalysisByCity(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	client, err := InitAI(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	config := &genai.GenerateContentConfig{
@@ -136,28 +144,32 @@ imp_avg - среднее по шкале важности проблем в да
 		config,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate AI response:%w", err)
+		return fmt.Errorf("failed to generate AI response:%w", err)
 	}
 
 	fmt.Println("end generating, unmarshalling")
-	if err := json.Unmarshal([]byte(result.Text()), &extendedAnswer); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal AI response:%w", err)
+	if err := json.Unmarshal([]byte(result.Text()), &extendedAIAnswer); err != nil {
+		return fmt.Errorf("failed to unmarshal AI response:%w", err)
 	}
 
-	return &extendedAnswer, nil
+	err = s.problemRepo.CacheAIResponse(ctx, &extendedAIAnswer, typeID)
+	if err != nil {
+		return err
+	}
 
+	return nil
 }
 
-func (s *AIPredictService) PredictForCity(ctx context.Context) (*entities.ExtendedAnswer, error) {
-	var extendedAnswer entities.ExtendedAnswer
-	cityStat, err := s.repo.GetAnalysisByCity(ctx)
+func (s *AIPredictService) PredictForCity(ctx context.Context) error {
+	var extendedAIAnswer entities.ExtendedAIResponse
+	cityStat, err := s.problemRepo.GetAnalysisByCity(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	client, err := InitAI(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	config := &genai.GenerateContentConfig{
@@ -185,18 +197,111 @@ func (s *AIPredictService) PredictForCity(ctx context.Context) (*entities.Extend
 
 	result, err := client.Models.GenerateContent(
 		ctx,
-		"gemini-2.5-flash-lite",
+		"gemini-2.5-flash",
 		genai.Text(prompt),
 		config,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate AI response:%w", err)
+		return fmt.Errorf("failed to generate AI response:%w", err)
 	}
 
 	fmt.Println("end generating, unmarshalling")
-	if err := json.Unmarshal([]byte(result.Text()), &extendedAnswer); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal AI response:%w", err)
+	if err := json.Unmarshal([]byte(result.Text()), &extendedAIAnswer); err != nil {
+		return fmt.Errorf("failed to unmarshal AI response:%w", err)
 	}
 
-	return &extendedAnswer, nil
+	err = s.problemRepo.CacheAIResponse(ctx, &extendedAIAnswer, 1)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(extendedAIAnswer.AnswerText)
+	return nil
+}
+
+func (s *AIPredictService) GetAnalysisByCity(ctx context.Context) (*entities.ExtendedAIResponse, error) {
+	analysis, err := s.problemRepo.GetAIResponseById(ctx, -1)
+	if err != nil {
+
+		err := s.PredictForCity(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		analysis, err := s.problemRepo.GetAIResponseById(ctx, -1)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		analysisDTO := entities.ExtendedAIResponse{
+			AnswerText: analysis.ResponseText,
+			Status:     analysis.Status,
+		}
+		return &analysisDTO, nil
+	}
+
+	analysisDTO := entities.ExtendedAIResponse{
+		AnswerText: analysis.ResponseText,
+		Status:     analysis.Status,
+	}
+
+	return &analysisDTO, nil
+}
+
+func (s *AIPredictService) GetAnalysisByDistrict(ctx context.Context, districtID int) (*entities.ExtendedAIResponse, error) {
+	analysis, err := s.problemRepo.GetAIResponseById(ctx, districtID)
+	if err != nil {
+
+		err := s.PredictForCity(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		analysis, err := s.problemRepo.GetAIResponseById(ctx, districtID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		analysisDTO := entities.ExtendedAIResponse{
+			AnswerText: analysis.ResponseText,
+			Status:     analysis.Status,
+		}
+		return &analysisDTO, nil
+	}
+
+	analysisDTO := entities.ExtendedAIResponse{
+		AnswerText: analysis.ResponseText,
+		Status:     analysis.Status,
+	}
+
+	return &analysisDTO, nil
+}
+
+func (s *AIPredictService) GetAnalysisByType(ctx context.Context, typeID int) (*entities.ExtendedAIResponse, error) {
+	analysis, err := s.problemRepo.GetAIResponseById(ctx, typeID)
+	if err != nil {
+
+		err := s.PredictForCity(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		analysis, err := s.problemRepo.GetAIResponseById(ctx, typeID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		analysisDTO := entities.ExtendedAIResponse{
+			AnswerText: analysis.ResponseText,
+			Status:     analysis.Status,
+		}
+		return &analysisDTO, nil
+	}
+
+	analysisDTO := entities.ExtendedAIResponse{
+		AnswerText: analysis.ResponseText,
+		Status:     analysis.Status,
+	}
+
+	return &analysisDTO, nil
 }

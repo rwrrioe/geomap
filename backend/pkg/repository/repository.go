@@ -1,5 +1,8 @@
 package repository
 
+//TODO add precached list of all problems
+//TODO add redis caching
+
 import (
 	"context"
 	"fmt"
@@ -41,21 +44,26 @@ type ProblemStatByCity struct {
 
 type ProblemDTO struct {
 	ProblemID   int
+	DistrictID  int
+	Geom        georm.Point
 	Name        string
 	Description string
-	Type        string
-	ImageURL    string //TODO
-	Coordinates georm.Point
+	Importance  float64
 	Status      string
+	TypeID      int
 }
 
 func newProblemDTO(p entities.Problem) *ProblemDTO {
 	return &ProblemDTO{
 		ProblemID:   p.ProblemID,
-		Status:      p.Status,
+		DistrictID:  p.DistrictID,
+		Geom:        p.Geom,
 		Name:        p.Name,
 		Description: p.Description,
-		Coordinates: p.Geom,
+		Importance:  p.Importance,
+		TypeID:      p.TypeId,
+
+		Status: p.Status,
 	}
 }
 
@@ -66,6 +74,10 @@ type ProblemRepository interface {
 	GetAnalysisByType(ctx context.Context, id int) ([]ProblemStatByType, error)
 	GetAnalysisByCity(ctx context.Context) (ProblemStatByCity, error)
 	FindDistrict(ctx context.Context, point geom.Point) (FindDistrictResponse, error)
+	AddProblem(ctx context.Context, problem entities.Problem) error
+	ListProblems(ctx context.Context) (*[]ProblemDTO, error)
+	GetAIResponseById(ctx context.Context, id int) (*entities.CachedAnswer, error)
+	CacheAIResponse(ctx context.Context, aiResponse *entities.ExtendedAIResponse, requestID int) error
 	GetDb() *ProblemRepo
 }
 
@@ -83,13 +95,47 @@ func (p *ProblemRepo) GetDb() *ProblemRepo {
 	}
 }
 
+func (p *ProblemRepo) GetAIResponseById(ctx context.Context, id int) (*entities.CachedAnswer, error) {
+	var extendedAnswer entities.CachedAnswer
+
+	result := p.Db.Raw(
+		`SELECT
+                *
+				FROM cached_answers
+                WHERE request_id = ?`, id).Scan(&extendedAnswer)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &extendedAnswer, nil
+}
+
+func (p *ProblemRepo) CacheAIResponse(ctx context.Context, aiResponse *entities.ExtendedAIResponse, requestID int) error {
+	cachedResponse := entities.CachedAnswer{
+		ResponseText: aiResponse.AnswerText,
+		Status:       aiResponse.Status,
+		RequestID:    requestID,
+	}
+
+	result := p.Db.Create(&cachedResponse)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 func (p *ProblemRepo) GetById(ctx context.Context, id int) (*ProblemDTO, error) {
 	var problem entities.Problem
 
-	result := p.Db.WithContext(ctx).Preload("District").First(&problem, "problem_id=?", id)
+	result := p.Db.WithContext(ctx).Raw(
+		`SELECT
+                *
+				FROM problems_with_importance
+                WHERE problem_id = ?`, id).Scan(&problem)
 	if result.Error != nil {
-		log.Fatal("not found")
+		return nil, result.Error
 	}
+
 	dto := newProblemDTO(problem)
 	return dto, nil
 }
@@ -176,7 +222,7 @@ func (p *ProblemRepo) FindDistrict(ctx context.Context, point geom.Point) (FindD
 	var district FindDistrictResponse
 
 	log.Println("wkt marshalling")
-	pointWKT, err := wkt.Marshal(&point)
+	pointWKT, err := wkt.NewEncoder().Encode(&point)
 	if err != nil {
 		return FindDistrictResponse{}, err
 	}
@@ -202,16 +248,38 @@ func (p *ProblemRepo) FindDistrict(ctx context.Context, point geom.Point) (FindD
 
 	log.Println("second check")
 	if result.RowsAffected == 0 {
+		log.Println("inside check")
 		return FindDistrictResponse{}, fmt.Errorf("no district found for point %s", pointWKT)
 	}
-	log.Println("return")
+
 	return district, nil
 }
 
-func (p *ProblemRepo) AddProblem(ctx context.Context, problem entities.ProblemResponseDTO) error {
+func (p *ProblemRepo) AddProblem(ctx context.Context, problem entities.Problem) error {
 	result := p.Db.Create(&problem)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
+}
+
+func (p *ProblemRepo) ListProblems(ctx context.Context) (*[]ProblemDTO, error) {
+	var problems []entities.Problem
+	result := p.Db.WithContext(ctx).Raw(
+		`
+		SELECT *
+		FROM problems_with_importance 
+		`).Scan(&problems)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	dtos := make([]ProblemDTO, 0, len(problems))
+
+	for _, p := range problems {
+		dto := newProblemDTO(p)
+		dtos = append(dtos, *dto)
+	}
+
+	return &dtos, nil
 }

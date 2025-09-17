@@ -29,13 +29,13 @@ type ProblemsResponse struct {
 }
 
 type TMPAiResponse struct {
-	ProblemID   int    `json:"problem_id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Type        string `json:"type"`
-	Geom        string `json:"geom"`
-	Status      string `json:"status"`
-	Importance  int    `json:"importance"`
+	ProblemID   int     `json:"problem_id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Type        string  `json:"type"`
+	Geom        string  `json:"geom"`
+	Status      string  `json:"status"`
+	Importance  float64 `json:"importance"`
 }
 
 func newProblemsResponse() *ProblemsResponse {
