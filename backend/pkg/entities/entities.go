@@ -4,6 +4,8 @@ package entities
 //TODO add Object struct , separate objects and problems
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 
 	"github.com/twpayne/go-geom"
@@ -104,10 +106,30 @@ func flattenRing(ring [][]float64) []float64 {
 	return flat
 }
 
+// USER ENTITIES
+type User struct {
+	ID   int
+	Name string
+	Role string // "guest", "admin", "user", etc...
+}
+
 // HEATMAP ENTITIES
 type HeatMap struct {
 	Max        int         `json:"max_points"`
 	HeatPoints []HeatPoint `json:"heat_points"`
+}
+
+func NewHeatpMap() *HeatMap {
+	return &HeatMap{}
+}
+
+type CachedHeatMap struct {
+	HeatMapID int     `gorm:"column:heatmap_id;primaryKey;autoIncrement;-><-:create"`
+	HeatMap   HeatMap `gorm:"column:heatmap_data;type:json"`
+}
+
+func (CachedHeatMap) TableName() string {
+	return "cached_heatmaps"
 }
 
 type HeatPoint struct {
@@ -121,13 +143,27 @@ type Point struct {
 	Importance float64 `json:"importance"`
 }
 
-func NewHeatpMap() *HeatMap {
-	return &HeatMap{}
+// HEATMAP VALUER/SCANNER
+func (h HeatMap) Value() (driver.Value, error) {
+	return json.Marshal(h)
 }
 
-type BreefAnswer struct {
+func (h *HeatMap) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("expected []byte, got %T", value)
+	}
+
+	return json.Unmarshal(bytes, h)
+}
+
+type BreefAIResponse struct {
 	Breef  string `json:"breef_answer"`
 	Status string `json:"status"`
+}
+
+type HeatMapResponse struct {
+	Responses []BreefAIResponse `json:"responses"`
 }
 
 type CachedAnswer struct {

@@ -17,10 +17,10 @@ func NewHeatMapService(repo repository.ProblemRepository) *HeatMapService {
 	}
 }
 
-func (h *HeatMapService) BuildHeatMap(ctx context.Context) (*entities.HeatMap, error) {
+func (h *HeatMapService) BuildHeatMap(ctx context.Context) error {
 	points, err := h.repo.ListProblems(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	heatPoints := make([]entities.HeatPoint, 0, len(*points))
 
@@ -46,5 +46,29 @@ func (h *HeatMapService) BuildHeatMap(ctx context.Context) (*entities.HeatMap, e
 		HeatPoints: heatPoints,
 	}
 
-	return &heatMap, nil
+	err = h.repo.CacheHeatMap(ctx, &heatMap)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *HeatMapService) GetHeatMap(ctx context.Context) (*entities.CachedHeatMap, error) {
+	heatmap, err := h.repo.GetHeatMap(ctx)
+	if err != nil {
+		err := h.BuildHeatMap(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		heatmap, err := h.GetHeatMap(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		return heatmap, nil
+	}
+
+	return heatmap, nil
 }

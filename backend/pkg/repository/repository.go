@@ -78,6 +78,10 @@ type ProblemRepository interface {
 	ListProblems(ctx context.Context) (*[]ProblemDTO, error)
 	GetAIResponseById(ctx context.Context, id int) (*entities.CachedAnswer, error)
 	CacheAIResponse(ctx context.Context, aiResponse *entities.ExtendedAIResponse, requestID int) error
+	CacheHeatMap(ctx context.Context, heatmap *entities.HeatMap) error
+	GetHeatMap(ctx context.Context) (*entities.CachedHeatMap, error)
+	IsDistrict(ctx context.Context, id int) bool
+	IsProblemType(ctx context.Context, id int) bool
 	GetDb() *ProblemRepo
 }
 
@@ -93,6 +97,24 @@ func (p *ProblemRepo) GetDb() *ProblemRepo {
 	return &ProblemRepo{
 		Db: p.Db,
 	}
+}
+
+func (p *ProblemRepo) IsDistrict(ctx context.Context, id int) bool {
+	result := p.Db.Raw(
+		`SELECT
+                *
+				FROM districts
+                WHERE district_id = ?`, id)
+	return result.Error != nil
+}
+
+func (p *ProblemRepo) IsProblemType(ctx context.Context, id int) bool {
+	result := p.Db.Raw(
+		`SELECT
+                *
+				FROM problem_types
+                WHERE type_id = ?`, id)
+	return result.Error != nil
 }
 
 func (p *ProblemRepo) GetAIResponseById(ctx context.Context, id int) (*entities.CachedAnswer, error) {
@@ -122,6 +144,36 @@ func (p *ProblemRepo) CacheAIResponse(ctx context.Context, aiResponse *entities.
 		return result.Error
 	}
 	return nil
+}
+
+func (p *ProblemRepo) CacheHeatMap(ctx context.Context, heatmap *entities.HeatMap) error {
+	cachedHeatMap := entities.CachedHeatMap{
+		HeatMap: entities.HeatMap{
+			Max:        heatmap.Max,
+			HeatPoints: heatmap.HeatPoints,
+		},
+	}
+
+	result := p.Db.Create(&cachedHeatMap)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (p *ProblemRepo) GetHeatMap(ctx context.Context) (*entities.CachedHeatMap, error) {
+	var heatmap entities.CachedHeatMap
+
+	result := p.Db.Raw(
+		`SELECT
+                *
+				FROM cached_heatmaps
+                `).Scan(&heatmap)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &heatmap, nil
 }
 
 func (p *ProblemRepo) GetById(ctx context.Context, id int) (*ProblemDTO, error) {
