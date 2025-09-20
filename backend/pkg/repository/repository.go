@@ -105,7 +105,7 @@ func (p *ProblemRepo) IsDistrict(ctx context.Context, id int) bool {
                 *
 				FROM districts
                 WHERE district_id = ?`, id)
-	return result.Error != nil
+	return result.Error == nil
 }
 
 func (p *ProblemRepo) IsProblemType(ctx context.Context, id int) bool {
@@ -114,7 +114,7 @@ func (p *ProblemRepo) IsProblemType(ctx context.Context, id int) bool {
                 *
 				FROM problem_types
                 WHERE type_id = ?`, id)
-	return result.Error != nil
+	return result.Error == nil
 }
 
 func (p *ProblemRepo) GetAIResponseById(ctx context.Context, id int) (*entities.CachedAnswer, error) {

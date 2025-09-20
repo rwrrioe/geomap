@@ -38,10 +38,10 @@ func (s *HTTPServer) InitServerDefault() error {
 	s.HTTPHandlers = handlers
 
 	engine.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:8080"},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
-		ExposeHeaders:    []string{"Content=Length"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
 
@@ -50,7 +50,6 @@ func (s *HTTPServer) InitServerDefault() error {
 	engine.GET("/heatmap/analysis/district/:districtID", handlers.GetDistrictPrediction)
 	engine.GET("/heatmap/analysis/type/:typeID", handlers.GetTypePrediction)
 	engine.GET("/heatmap/analysis/city/:cityID", handlers.GetPredictByCity)
-
 	engine.Run(":8080")
 	return nil
 }

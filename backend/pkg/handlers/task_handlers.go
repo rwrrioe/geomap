@@ -118,13 +118,15 @@ func (h *HTTPHandlers) CreateBreefPredicts(c *gin.Context) {
 		select {
 		case txt := <-c1:
 			responsesDTO = append(responsesDTO, entities.BreefAIResponse{
-				Breef:  txt,
-				Status: "ok",
+				DistrictID: 3072217,
+				Breef:      txt,
+				Status:     "ok",
 			})
 		case txt := <-c2:
 			responsesDTO = append(responsesDTO, entities.BreefAIResponse{
-				Breef:  txt,
-				Status: "ok",
+				DistrictID: 3390291,
+				Breef:      txt,
+				Status:     "ok",
 			})
 		case <-ctx.Done():
 			c.JSON(http.StatusRequestTimeout, gin.H{

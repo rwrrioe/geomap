@@ -158,8 +158,9 @@ func (h *HeatMap) Scan(value interface{}) error {
 }
 
 type BreefAIResponse struct {
-	Breef  string `json:"breef_answer"`
-	Status string `json:"status"`
+	DistrictID int    `json:"district_id"`
+	Breef      string `json:"breef_answer"`
+	Status     string `json:"status"`
 }
 
 type HeatMapResponse struct {
@@ -186,7 +187,7 @@ var ProblemTypeMap = map[int]string{
 }
 
 func UnmapProblemType(id int) (string, error) {
-	for k, _ := range ProblemTypeMap {
+	for k := range ProblemTypeMap {
 		if k == id {
 			return ProblemTypeMap[k], nil
 		}

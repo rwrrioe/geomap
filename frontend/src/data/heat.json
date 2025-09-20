@@ -1,0 +1,573 @@
+{
+    "max_points": 71,
+    "heat_points": [
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.95,
+                "lat": 43.2611,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9644,
+                "lat": 43.2711,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 3,
+            "point": {
+                "lon": 76.9522,
+                "lat": 43.2566,
+                "importance": 7.6
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9433,
+                "lat": 43.251,
+                "importance": 8.568181818181818
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9357,
+                "lat": 43.2499,
+                "importance": 5.568181818181818
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.8812,
+                "lat": 43.2401,
+                "importance": 8.568181818181818
+            }
+        },
+        {
+            "category": 3,
+            "point": {
+                "lon": 76.921,
+                "lat": 43.2555,
+                "importance": 6.568181818181818
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9415,
+                "lat": 43.257,
+                "importance": 8.568181818181818
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8844,
+                "lat": 43.2455,
+                "importance": 7.568181818181818
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9244,
+                "lat": 43.2599,
+                "importance": 5.568181818181818
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9333,
+                "lat": 43.2433,
+                "importance": 8.568181818181818
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9444,
+                "lat": 43.2533,
+                "importance": 8.568181818181818
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9377,
+                "lat": 43.2477,
+                "importance": 7.568181818181818
+            }
+        },
+        {
+            "category": 3,
+            "point": {
+                "lon": 76.94,
+                "lat": 43.2511,
+                "importance": 6.568181818181818
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8583,
+                "lat": 43.2448,
+                "importance": 7.375
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.8673,
+                "lat": 43.2289,
+                "importance": 8.375
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.875,
+                "lat": 43.2085,
+                "importance": 5.375
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.8801,
+                "lat": 43.2255,
+                "importance": 8.375
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8611,
+                "lat": 43.2355,
+                "importance": 7.375
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8788,
+                "lat": 43.2188,
+                "importance": 7.375
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9085,
+                "lat": 43.2077,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8899,
+                "lat": 43.2223,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 3,
+            "point": {
+                "lon": 76.9178,
+                "lat": 43.2135,
+                "importance": 6.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9292,
+                "lat": 43.2322,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9011,
+                "lat": 43.2011,
+                "importance": 3.5059041835357623
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8777,
+                "lat": 43.1988,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9155,
+                "lat": 43.2188,
+                "importance": 4.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8931,
+                "lat": 43.2334,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9074,
+                "lat": 43.2266,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9111,
+                "lat": 43.2058,
+                "importance": 5.505904183535763
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.8888,
+                "lat": 43.2155,
+                "importance": 5.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9456,
+                "lat": 43.2301,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9,
+                "lat": 43.2,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.8701,
+                "lat": 43.1955,
+                "importance": 5.505904183535763
+            }
+        },
+        {
+            "category": 3,
+            "point": {
+                "lon": 76.9398,
+                "lat": 43.2415,
+                "importance": 6.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8953,
+                "lat": 43.2388,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9044,
+                "lat": 43.2199,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9189,
+                "lat": 43.2295,
+                "importance": 5.505904183535763
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.8988,
+                "lat": 43.2111,
+                "importance": 5.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.932,
+                "lat": 43.2366,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9133,
+                "lat": 43.215,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.8722,
+                "lat": 43.1911,
+                "importance": 5.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9099,
+                "lat": 43.2033,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 3,
+            "point": {
+                "lon": 76.9066,
+                "lat": 43.2311,
+                "importance": 6.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.91,
+                "lat": 43.2088,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9288,
+                "lat": 43.2288,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8911,
+                "lat": 43.2044,
+                "importance": 5.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8711,
+                "lat": 43.1988,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9177,
+                "lat": 43.2255,
+                "importance": 6.505904183535763
+            }
+        },
+        {
+            "category": 3,
+            "point": {
+                "lon": 76.8855,
+                "lat": 43.22,
+                "importance": 6.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9033,
+                "lat": 43.2,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.8977,
+                "lat": 43.23,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.8888,
+                "lat": 43.2088,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9155,
+                "lat": 43.2111,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9498,
+                "lat": 43.2593,
+                "importance": 7.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9587,
+                "lat": 43.2655,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.9565,
+                "lat": 43.2589,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9678,
+                "lat": 43.2755,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.961,
+                "lat": 43.2688,
+                "importance": 4.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9512,
+                "lat": 43.2522,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9595,
+                "lat": 43.2603,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9477,
+                "lat": 43.2211,
+                "importance": 9.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9533,
+                "lat": 43.2701,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9488,
+                "lat": 43.2488,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9555,
+                "lat": 43.2577,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.9666,
+                "lat": 43.2666,
+                "importance": 6.6
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.8777,
+                "lat": 43.1999,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 2,
+            "point": {
+                "lon": 76.9111,
+                "lat": 43.2222,
+                "importance": 8.505904183535762
+            }
+        },
+        {
+            "category": 4,
+            "point": {
+                "lon": 76.8944,
+                "lat": 43.2144,
+                "importance": 5.505904183535763
+            }
+        },
+        {
+            "category": 1,
+            "point": {
+                "lon": 76.93,
+                "lat": 43.2388,
+                "importance": 7.505904183535763
+            }
+        },
+        {
+            "category": 0,
+            "point": {
+                "lon": 76.9457,
+                "lat": 43.2389,
+                "importance": 5.505904183535763
+            }
+        }
+    ]
+}
