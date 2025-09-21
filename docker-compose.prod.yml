@@ -13,7 +13,7 @@ services:
     restart: always
 
   db:
-    image: postgres:17
+    image: postgis/postgis:17-3.3
     container_name: geomap_db
     restart: always
     environment:
