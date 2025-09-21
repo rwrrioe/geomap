@@ -115,7 +115,7 @@ const HeatmapPage = () => {
                 console.warn("⚠️ У этого района нет districtId!", feature.properties);
                 return;
               }
-              window.open(`/heatmap/analysis/district/${districtId}`, "_blank");
+              window.open(`${process.env.REACT_APP_API_URL}/heatmap/analysis/district/${districtId}`, "_blank");
             };
         });
       }
@@ -189,7 +189,7 @@ const HeatmapPage = () => {
           <div key={cat} style={{marginBottom:6, display:"flex", alignItems:"center"}}>
             <input type="checkbox" checked={layerToggles[cat]} onChange={()=>toggleLayer(cat)} />
             <span style={{marginLeft:8, flex:1}}>{name}</span>
-            <Button size="sm" variant="link" onClick={()=>window.open(`/heatmap/analysis/type/${cat}`,"_blank")}>Анализ</Button>
+            <Button size="sm" variant="link" onClick={()=>window.open(`${process.env.REACT_APP_API_URL}/heatmap/analysis/type/${cat}`,"_blank")}>Анализ</Button>
           </div>
         ))}
 
