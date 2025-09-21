@@ -32,7 +32,7 @@ const CityAnalysisPage = () => {
       <Button as={Link} to="/heatmap" variant="secondary" className="mb-3">Back to map</Button>
       <Card>
         <Card.Body>
-          <Card.Title>City analysis</Card.Title>
+          <Card.Title>Almaty City analysis</Card.Title>
           <Card.Text style={{ whiteSpace: "pre-wrap" }}>
             {analysis && analysis.extended_answer ? analysis.extended_answer : JSON.stringify(analysis)}
           </Card.Text>

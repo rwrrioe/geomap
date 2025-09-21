@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import districts from "../data/almaty.json";
 import { getHeatmap, postBriefAnswers } from "../api";
 
-// стиль районов
+// Highlight и базовый стиль
 const districtStyle = {
   color: "#1a73e8", // насыщенный синий
   weight: 0.7,
@@ -21,23 +21,37 @@ const districtHighlight = {
   opacity: 1,
 };
 
+
 const categoryColors = {
-  1: "rgba(0,0,255,5)",   // ЖКХ
-  2: "rgba(255,165,0,6)", // Дороги и транспорт
-  3: "rgba(0,200,0,6)",   // Гос. сервис
-  4: "rgba(255,0,128,6)"  // Прочее
+  1: "rgba(0,0,255,0.5)",
+  2: "rgba(255,165,0,0.5)",
+  3: "rgba(0,200,0,0.5)",
+  4: "rgba(255,0,128,0.5)"
 };
+
+// Функция разбивки MultiPolygon на отдельные Polygon
+const flattenMultiPolygon = (feature) => {
+  if (feature.geometry.type === "MultiPolygon") {
+    return feature.geometry.coordinates.map(coords => ({
+      type: "Feature",
+      properties: feature.properties,
+      geometry: { type: "Polygon", coordinates: coords }
+    }));
+  }
+  return [feature];
+};
+
+const flatFeatures = districts.features.flatMap(flattenMultiPolygon);
+const flatGeoJSON = { type: "FeatureCollection", features: flatFeatures };
 
 const HeatmapPage = () => {
   const mapRef = useRef(null);
   const [heatPoints, setHeatPoints] = useState([]);
   const [briefs, setBriefs] = useState([]);
   const [layerToggles, setLayerToggles] = useState({1:true,2:true,3:true,4:true});
-  const [districtLayer, setDistrictLayer] = useState(null);
   const [heatLayers, setHeatLayers] = useState({});
   const navigate = useNavigate();
 
-  // загрузка данных
   useEffect(() => {
     fetchHeatmapAndBriefs();
   }, []);
@@ -61,50 +75,57 @@ const HeatmapPage = () => {
       }).addTo(mapRef.current);
     }
 
-    // создаем слой районов
-    const style = { color: "#555", weight: 1, fillOpacity: 0.05 };
-    const highlight = { color: "#ff7800", weight: 2, fillOpacity: 0.2 };
-
-    const geoJson = L.geoJSON(districts, {
+    const geoJsonLayer = L.geoJSON(flatGeoJSON, {
       style: districtStyle,
       onEachFeature: (feature, layer) => {
-        const districtId = feature.properties["osm-relation-id"];
-        const districtName = feature.properties.nameRu || districtId;
-
-        // tooltip при наведении
+        const districtName = feature.properties.nameRu || feature.properties.name || "Без названия";
+      
         layer.bindTooltip(districtName, { direction: "auto" });
-
-        // клик на район
+      
         layer.on("click", () => {
-          geoJson.eachLayer(l => geoJson.resetStyle(l));
+          geoJsonLayer.eachLayer(l => geoJsonLayer.resetStyle(l));
           layer.setStyle(districtHighlight);
-
-          // краткий бриф для всплывашки
-          const brief = briefs.find(b => Number(b.district_id) === Number(districtId));
+          if (layer.bringToFront) layer.bringToFront();
+        
+          const districtName = feature.properties.nameRu || "Без названия";
+          const brief = briefs.find(b => Number(b.district_id) === Number(feature.properties["osm-relation-id"]));
           const briefText = brief?.breef_answer || "Нет данных";
-
-          const popupContent = L.DomUtil.create("div");
-          const title = L.DomUtil.create("b", "", popupContent);
-          title.innerText = districtName;
-          const text = L.DomUtil.create("div", "", popupContent);
-          text.innerHTML = briefText;
-
-          const btn = L.DomUtil.create("button", "btn btn-sm btn-primary mt-2", popupContent);
-          btn.innerText = "Получить детальный анализ";
-          btn.onclick = () => window.open(`/heatmap/analysis/district/${districtId}`, "_blank");
-
-          layer.bindPopup(popupContent).openPopup();
+        
+          const center = layer.getBounds().getCenter();
+          const popupContent = document.createElement("div");
+          popupContent.innerHTML = `
+            <b>${districtName}</b>
+            <div>${briefText}</div>
+            <button class="btn btn-sm btn-primary mt-2">Получить детальный анализ</button>
+          `;
+        
+          L.popup({
+            closeOnClick: true,
+            autoPan: true,
+            className: "custom-popup"
+          })
+            .setLatLng(center)
+            .setContent(popupContent)
+            .openOn(mapRef.current);
+        
+            popupContent.querySelector("button").onclick = () => {
+              const districtId = feature.properties["osm-relation-id"] || feature.properties.id;
+              console.log("DEBUG districtId:", districtId, "properties:", feature.properties);
+              if (!districtId) {
+                console.warn("⚠️ У этого района нет districtId!", feature.properties);
+                return;
+              }
+              window.open(`/heatmap/analysis/district/${districtId}`, "_blank");
+            };
         });
-      },
+      }
     }).addTo(mapRef.current);
-    setDistrictLayer(geoJson);
 
     return () => {
-      if (mapRef.current && districtLayer) mapRef.current.removeLayer(districtLayer);
+      if (mapRef.current) mapRef.current.removeLayer(geoJsonLayer);
     };
   }, [briefs]);
 
-  // обновление heatmap слоев
   useEffect(() => {
     if (!mapRef.current || !heatPoints.length) return;
 
@@ -150,7 +171,6 @@ const HeatmapPage = () => {
         </Container>
       </Navbar>
 
-      {/* меню справа */}
       <div style={{
         position:"absolute",
         top:60,
