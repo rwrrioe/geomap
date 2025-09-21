@@ -6,12 +6,8 @@ services:
     container_name: go_app
     depends_on:
       - db
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: 1234
-      DB_NAME: appdb
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     restart: always
@@ -21,11 +17,9 @@ services:
     container_name: geomap_db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: geomapdb
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - db_data:/var/lib/postgresql/data
 
