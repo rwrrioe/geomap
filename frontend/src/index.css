@@ -1,0 +1,31 @@
+body {
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #map {
+    height: 75vh;
+    width: 100%;
+  }
+  
+  .leaflet-container { background: #f8f9fa; }
+  
+  .header-title {
+    font-weight: 700;
+    color: #0d6efd;
+    font-size: 1.5rem;
+    text-align: center;
+    margin: 20px 0;
+  }
+
+.custom-popup .leaflet-popup-content-wrapper,
+.custom-popup .leaflet-popup-tip {
+  background: rgba(255,255,255,0.95);
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+path.leaflet-interactive {
+  outline: none;
+}
