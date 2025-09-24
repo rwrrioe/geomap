@@ -238,3 +238,97 @@ func (h *HTTPHandlers) GetPredictByCity(c *gin.Context) {
 
 	c.JSON(http.StatusOK, prediction)
 }
+
+/*
+pattern: /heatmap/problems/:problemID
+method:  GET
+info:	 parameters from path
+
+succeed:
+
+	status code: 200 OK
+	response body: json represents problem
+
+failed:
+
+	status code: 500, 400 ...
+	response body: json with error, time
+*/
+func (h *HTTPHandlers) GetProblem(c *gin.Context) {
+	problemID, err := strconv.Atoi(c.Param("problemID"))
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	problem, err := h.ProblemService.GetProblem(c, problemID)
+	if err != nil {
+		respondError(c, err, http.StatusNotFound)
+		return
+	}
+
+	c.JSON(http.StatusOK, problem)
+}
+
+/*
+pattern: heatmap/districts/:districtID/problems
+method:  GET
+info:	 parameters in path
+
+succeed:
+
+	status code: 200 OK
+	response body: json represents district problems
+
+failed:
+
+	status code: 500, 400 ...
+	response body: json with error, time
+*/
+func (h *HTTPHandlers) ListProblemsByDistrict(c *gin.Context) {
+	districtID, err := strconv.Atoi(c.Query("districtID"))
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	problems, err := h.ProblemService.ListProblemsByDistrict(c, districtID)
+	if err != nil {
+		respondError(c, err, http.StatusNotFound)
+		return
+	}
+
+	c.JSON(http.StatusOK, problems)
+}
+
+/*
+pattern: heatmap/districts/:districtID/problems/
+method:  GET
+info:	 parameters in path
+
+succeed:
+
+	status code: 201 created
+	response body: json represents created problem
+
+failed:
+
+	status code: 500, 400 ...
+	response body: json with error, time
+*/
+func (h *HTTPHandlers) CreateProblem(c *gin.Context) {
+	var problemRequest entities.CreateProblemRequest
+
+	if err := c.ShouldBindJSON(&problemRequest); err != nil {
+		respondError(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	err := h.ProblemService.NewProblem(c, problemRequest)
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	c.JSON(http.StatusCreated, problemRequest)
+}

@@ -42,6 +42,7 @@ type Problem struct {
 	Geom        georm.Point `gorm:"type:geometry(Point,4326)"`
 	Name        string      `gorm:"not null"`
 	Description string      `gorm:"not null"`
+	ImageURL    string      `gorm:"column:image_url"`
 	Importance  float64     `gorm:"not null"`
 	Status      string      `gorm:"not null"`
 	TypeId      int         `gorm:"not null"`
@@ -59,12 +60,17 @@ type ProblemResponseDTO struct {
 }
 
 type CreateProblemRequest struct {
-	ProblemID   int     `json:"name" binding:"required"`
 	ProblemName string  `json:"problem_name" binding:"required"`
+	ImageURL    string  `json:"image_url" binding:"required"`
 	Description string  `json:"description"`
 	TypeID      int     `json:"type_id" binding:"required"`
 	Lat         float64 `json:"lat" binding:"required"`
 	Lon         float64 `json:"lon" binding:"required"`
+}
+
+type ProblemType struct {
+	TypeId   int    `gorm:"primaryKey;column:type_id"`
+	TypeName string `gorm:"column:type"`
 }
 
 func MapToDistinct(dto DistrictDTO) *District {

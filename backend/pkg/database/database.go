@@ -43,7 +43,10 @@ func newProblemsResponse() *ProblemsResponse {
 }
 
 func DbConnect() (repository.ProblemRepository, error) {
-	_ = godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	dsnParam := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		os.Getenv("DB_HOST"),

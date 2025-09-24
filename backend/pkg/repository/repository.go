@@ -5,8 +5,8 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
 	"github.com/twpayne/go-geom"
@@ -43,33 +43,39 @@ type ProblemStatByCity struct {
 }
 
 type ProblemDTO struct {
-	ProblemID   int
-	DistrictID  int
-	Geom        georm.Point
-	Name        string
-	Description string
-	Importance  float64
-	Status      string
-	TypeID      int
+	ProblemID    int         `json:"problem_id"`
+	DistrictName string      `json:"district_name"`
+	Geom         georm.Point `json:"geom,omitempty"`
+	Name         string      `json:"problem_name"`
+	Description  string      `json:"problem_desc"`
+	ImageURL     string      `gorm:"column:image_url" json:"image_url"`
+	Importance   float64     `json:"column:importance"`
+	Status       string      `json:"status"`
+	TypeID       int         `json:"problem_typeid"`
 }
 
-func newProblemDTO(p entities.Problem) *ProblemDTO {
+func newProblemDTO(ctx context.Context, repo ProblemRepository, p *entities.Problem) (*ProblemDTO, error) {
+	district, err := repo.FindDistrict(ctx, *p.Geom.Geom)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ProblemDTO{
-		ProblemID:   p.ProblemID,
-		DistrictID:  p.DistrictID,
-		Geom:        p.Geom,
-		Name:        p.Name,
-		Description: p.Description,
-		Importance:  p.Importance,
-		TypeID:      p.TypeId,
+		ProblemID:    p.ProblemID,
+		DistrictName: district.District_name,
+		Geom:         p.Geom,
+		Name:         p.Name,
+		Description:  p.Description,
+		Importance:   p.Importance,
+		TypeID:       p.TypeId,
 
 		Status: p.Status,
-	}
+	}, nil
 }
 
 type ProblemRepository interface {
 	GetById(ctx context.Context, id int) (*ProblemDTO, error)
-	ListByDistrict(ctx context.Context, id int) ([]*ProblemDTO, error)
+	ListByDistrict(ctx context.Context, id int) (*[]ProblemDTO, error)
 	GetAnalysisByDistrict(ctx context.Context, id int) ([]ProblemStatByDistrict, error)
 	GetAnalysisByType(ctx context.Context, id int) ([]ProblemStatByType, error)
 	GetAnalysisByCity(ctx context.Context) (ProblemStatByCity, error)
@@ -100,31 +106,21 @@ func (p *ProblemRepo) GetDb() *ProblemRepo {
 }
 
 func (p *ProblemRepo) IsDistrict(ctx context.Context, id int) bool {
-	result := p.Db.Raw(
-		`SELECT
-                *
-				FROM districts
-                WHERE district_id = ?`, id)
+	result := p.Db.First(&entities.District{}, id)
+
 	return result.Error == nil
 }
 
 func (p *ProblemRepo) IsProblemType(ctx context.Context, id int) bool {
-	result := p.Db.Raw(
-		`SELECT
-                *
-				FROM problem_types
-                WHERE type_id = ?`, id)
+	result := p.Db.WithContext(ctx).First(&entities.ProblemType{}, id)
+
 	return result.Error == nil
 }
 
 func (p *ProblemRepo) GetAIResponseById(ctx context.Context, id int) (*entities.CachedAnswer, error) {
 	var extendedAnswer entities.CachedAnswer
 
-	result := p.Db.Raw(
-		`SELECT
-                *
-				FROM cached_answers
-                WHERE request_id = ?`, id).Scan(&extendedAnswer)
+	result := p.Db.Model(&entities.CachedAnswer{}).Find(&entities.CachedAnswer{}, id).Scan(&extendedAnswer)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -164,11 +160,7 @@ func (p *ProblemRepo) CacheHeatMap(ctx context.Context, heatmap *entities.HeatMa
 func (p *ProblemRepo) GetHeatMap(ctx context.Context) (*entities.CachedHeatMap, error) {
 	var heatmap entities.CachedHeatMap
 
-	result := p.Db.Raw(
-		`SELECT
-                *
-				FROM cached_heatmaps
-                `).Scan(&heatmap)
+	result := p.Db.WithContext(ctx).Scan(&heatmap)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -179,33 +171,41 @@ func (p *ProblemRepo) GetHeatMap(ctx context.Context) (*entities.CachedHeatMap, 
 func (p *ProblemRepo) GetById(ctx context.Context, id int) (*ProblemDTO, error) {
 	var problem entities.Problem
 
-	result := p.Db.WithContext(ctx).Raw(
-		`SELECT
-                *
-				FROM problems_with_importance
-                WHERE problem_id = ?`, id).Scan(&problem)
+	result := p.Db.WithContext(ctx).First(&problem, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	dto := newProblemDTO(problem)
+	dto, err := newProblemDTO(ctx, p, &problem)
+	if err != nil {
+		return nil, err
+	}
+
 	return dto, nil
 }
 
-func (p *ProblemRepo) ListByDistrict(ctx context.Context, id int) ([]*ProblemDTO, error) {
+func (p *ProblemRepo) ListByDistrict(ctx context.Context, id int) (*[]ProblemDTO, error) {
 	var problems []entities.Problem
 
 	result := p.Db.WithContext(ctx).Preload("District").Where("district_id=?", id).Find(&problems)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, gorm.ErrRecordNotFound
+	}
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	dtos := make([]*ProblemDTO, 0, len(problems))
+	dtos := make([]ProblemDTO, 0, len(problems))
 	for _, prob := range problems {
-		dtos = append(dtos, newProblemDTO(prob))
+		newDTO, err := newProblemDTO(ctx, p, &prob)
+		if err != nil {
+			return nil, err
+		}
+		dtos = append(dtos, *newDTO)
 	}
 
-	return dtos, nil
+	return &dtos, nil
 }
 
 func (p *ProblemRepo) GetAnalysisByDistrict(ctx context.Context, id int) ([]ProblemStatByDistrict, error) {
@@ -219,7 +219,7 @@ func (p *ProblemRepo) GetAnalysisByDistrict(ctx context.Context, id int) ([]Prob
                 avg(importance)::numeric(10,2) as avg_imp
                 FROM problems p
 				JOIN problem_types USING(type_id)
-				 WHERE district_id = ?
+				WHERE district_id = ?
                 GROUP BY type_id, type`, id).Scan(&stats)
 
 	if result.Error != nil {
@@ -273,13 +273,10 @@ func (p *ProblemRepo) GetAnalysisByCity(ctx context.Context) (ProblemStatByCity,
 func (p *ProblemRepo) FindDistrict(ctx context.Context, point geom.Point) (FindDistrictResponse, error) {
 	var district FindDistrictResponse
 
-	log.Println("wkt marshalling")
 	pointWKT, err := wkt.NewEncoder().Encode(&point)
 	if err != nil {
 		return FindDistrictResponse{}, err
 	}
-	fmt.Println(pointWKT)
-	log.Println("marshalling ended, query started")
 	result := p.Db.Raw(
 		`
 		SELECT
@@ -291,16 +288,12 @@ func (p *ProblemRepo) FindDistrict(ctx context.Context, point geom.Point) (FindD
 			ST_SetSRID(ST_GeomFromText(?), 4326)
 	)
 		`, pointWKT).Scan(&district)
-	log.Println("query ended")
 
-	log.Println("first check")
 	if result.Error != nil {
 		return FindDistrictResponse{}, fmt.Errorf("db query failed: %w", result.Error)
 	}
 
-	log.Println("second check")
 	if result.RowsAffected == 0 {
-		log.Println("inside check")
 		return FindDistrictResponse{}, fmt.Errorf("no district found for point %s", pointWKT)
 	}
 
@@ -317,19 +310,19 @@ func (p *ProblemRepo) AddProblem(ctx context.Context, problem entities.Problem) 
 
 func (p *ProblemRepo) ListProblems(ctx context.Context) (*[]ProblemDTO, error) {
 	var problems []entities.Problem
-	result := p.Db.WithContext(ctx).Raw(
-		`
-		SELECT *
-		FROM problems_with_importance 
-		`).Scan(&problems)
+	result := p.Db.WithContext(ctx).Find(&problems)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
 	dtos := make([]ProblemDTO, 0, len(problems))
 
-	for _, p := range problems {
-		dto := newProblemDTO(p)
+	for _, pr := range problems {
+		dto, err := newProblemDTO(ctx, p, &pr)
+		if err != nil {
+			return nil, err
+		}
+
 		dtos = append(dtos, *dto)
 	}
 
