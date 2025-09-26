@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
 	"github.com/twpayne/go-geom"
@@ -45,11 +46,12 @@ type ProblemStatByCity struct {
 type ProblemDTO struct {
 	ProblemID    int         `json:"problem_id"`
 	DistrictName string      `json:"district_name"`
+	DistrictId   int         `json:"district_id"`
 	Geom         georm.Point `json:"geom,omitempty"`
 	Name         string      `json:"problem_name"`
 	Description  string      `json:"problem_desc"`
 	ImageURL     string      `gorm:"column:image_url" json:"image_url"`
-	Importance   float64     `json:"column:importance"`
+	Importance   float64     `json:"importance"`
 	Status       string      `json:"status"`
 	TypeID       int         `json:"problem_typeid"`
 }
@@ -63,6 +65,7 @@ func newProblemDTO(ctx context.Context, repo ProblemRepository, p *entities.Prob
 	return &ProblemDTO{
 		ProblemID:    p.ProblemID,
 		DistrictName: district.District_name,
+		DistrictId:   district.District_ID,
 		Geom:         p.Geom,
 		Name:         p.Name,
 		Description:  p.Description,
@@ -106,7 +109,7 @@ func (p *ProblemRepo) GetDb() *ProblemRepo {
 }
 
 func (p *ProblemRepo) IsDistrict(ctx context.Context, id int) bool {
-	result := p.Db.First(&entities.District{}, id)
+	result := p.Db.WithContext(ctx).First(&entities.District{}, id)
 
 	return result.Error == nil
 }
@@ -120,7 +123,11 @@ func (p *ProblemRepo) IsProblemType(ctx context.Context, id int) bool {
 func (p *ProblemRepo) GetAIResponseById(ctx context.Context, id int) (*entities.CachedAnswer, error) {
 	var extendedAnswer entities.CachedAnswer
 
-	result := p.Db.Model(&entities.CachedAnswer{}).Find(&entities.CachedAnswer{}, id).Scan(&extendedAnswer)
+	result := p.Db.Where("request_id=?", id).First(&extendedAnswer)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -160,7 +167,7 @@ func (p *ProblemRepo) CacheHeatMap(ctx context.Context, heatmap *entities.HeatMa
 func (p *ProblemRepo) GetHeatMap(ctx context.Context) (*entities.CachedHeatMap, error) {
 	var heatmap entities.CachedHeatMap
 
-	result := p.Db.WithContext(ctx).Scan(&heatmap)
+	result := p.Db.WithContext(ctx).Last(&heatmap)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -225,6 +232,8 @@ func (p *ProblemRepo) GetAnalysisByDistrict(ctx context.Context, id int) ([]Prob
 	if result.Error != nil {
 		return nil, result.Error
 	}
+
+	log.Println("end query, result:", stats)
 	return stats, nil
 }
 

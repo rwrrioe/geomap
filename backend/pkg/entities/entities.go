@@ -60,12 +60,12 @@ type ProblemResponseDTO struct {
 }
 
 type CreateProblemRequest struct {
-	ProblemName string  `json:"problem_name" binding:"required"`
-	ImageURL    string  `json:"image_url" binding:"required"`
-	Description string  `json:"description"`
-	TypeID      int     `json:"type_id" binding:"required"`
-	Lat         float64 `json:"lat" binding:"required"`
-	Lon         float64 `json:"lon" binding:"required"`
+	ProblemName string `json:"problem_name" binding:"required"`
+	ImageURL    string `json:"image_url"`
+	Description string `json:"description"`
+	TypeID      int    `json:"type_id" binding:"required"`
+	Lat         float64
+	Lon         float64
 }
 
 type ProblemType struct {
@@ -144,6 +144,8 @@ type HeatPoint struct {
 }
 
 type Point struct {
+	DistrictId int     `json:"district_id"`
+	Id         int     `json:"problem_id"`
 	Lon        float64 `json:"lon"`
 	Lat        float64 `json:"lat"`
 	Importance float64 `json:"importance"`

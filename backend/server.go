@@ -50,9 +50,9 @@ func (s *HTTPServer) InitServerDefault() error {
 	engine.GET("/heatmap/analysis/district/:districtID", handlers.GetDistrictPrediction)
 	engine.GET("/heatmap/analysis/type/:typeID", handlers.GetTypePrediction)
 	engine.GET("/heatmap/analysis/city/:cityID", handlers.GetPredictByCity)
-	engine.GET("heatmap/problems/:problemID", handlers.GetProblem)
-	engine.GET("heatmap/districts/:districtID/problems", handlers.ListProblemsByDistrict)
-	engine.POST("heatmap/district/:districtID/problems", handlers.CreateProblem)
+	engine.GET("/heatmap/districts/:districtID/problems/:problemID", handlers.GetProblem)
+	engine.GET("/heatmap/districts/:districtID/problems", handlers.ListProblemsByDistrict)
+	engine.POST("/heatmap/districts/:districtID/problems", handlers.CreateProblem)
 	engine.Run(":8080")
 	return nil
 }

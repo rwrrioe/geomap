@@ -4,12 +4,14 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
 	"github.com/rwrrioe/geomap/backend/pkg/repository"
 	"github.com/twpayne/go-geom"
 	"github.com/ybru-tech/georm"
+	"gorm.io/gorm"
 )
 
 type ProblemService struct {
@@ -54,8 +56,8 @@ func (p *ProblemService) NewProblem(ctx context.Context, req entities.CreateProb
 
 func (p *ProblemService) GetProblem(ctx context.Context, problemId int) (*repository.ProblemDTO, error) {
 	problem, err := p.repo.GetById(ctx, problemId)
-	if err != nil {
-		return nil, err
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, gorm.ErrRecordNotFound
 	}
 
 	return problem, nil

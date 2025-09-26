@@ -7,6 +7,10 @@ import (
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
 )
 
+type districtID struct {
+	DistrictID int `uri:"districtID" binding:"required"`
+}
+
 type errDTO struct {
 	Message string
 	Time    time.Time

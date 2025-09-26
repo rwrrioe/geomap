@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -146,7 +147,6 @@ method:  GET
 info:	 parameters from path
 
 succeed:
-
 	status code: 200 OK
 	response body: json represents extended analysis
 
@@ -286,13 +286,15 @@ failed:
 	response body: json with error, time
 */
 func (h *HTTPHandlers) ListProblemsByDistrict(c *gin.Context) {
-	districtID, err := strconv.Atoi(c.Query("districtID"))
-	if err != nil {
+	var distID districtID
+
+	if err := c.ShouldBindUri(&distID); err != nil {
 		respondError(c, err, http.StatusBadRequest)
 		return
 	}
 
-	problems, err := h.ProblemService.ListProblemsByDistrict(c, districtID)
+	log.Println("dist id:", distID.DistrictID)
+	problems, err := h.ProblemService.ListProblemsByDistrict(c, distID.DistrictID)
 	if err != nil {
 		respondError(c, err, http.StatusNotFound)
 		return
@@ -302,9 +304,9 @@ func (h *HTTPHandlers) ListProblemsByDistrict(c *gin.Context) {
 }
 
 /*
-pattern: heatmap/districts/:districtID/problems/
-method:  GET
-info:	 parameters in path
+pattern: heatmap/districts/:districtID/problems?lat=123&lon=456
+method:  POST
+info:	 parameters in path + query params
 
 succeed:
 
@@ -318,13 +320,27 @@ failed:
 */
 func (h *HTTPHandlers) CreateProblem(c *gin.Context) {
 	var problemRequest entities.CreateProblemRequest
-
-	if err := c.ShouldBindJSON(&problemRequest); err != nil {
-		respondError(c, err, http.StatusInternalServerError)
+	lat, err := strconv.ParseFloat(c.Query("lat"), 64)
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
 		return
 	}
 
-	err := h.ProblemService.NewProblem(c, problemRequest)
+	lon, err := strconv.ParseFloat(c.Query("lon"), 64)
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	if err := c.ShouldBindJSON(&problemRequest); err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	problemRequest.Lat = lat
+	problemRequest.Lon = lon
+
+	err = h.ProblemService.NewProblem(c, problemRequest)
 	if err != nil {
 		respondError(c, err, http.StatusBadRequest)
 		return

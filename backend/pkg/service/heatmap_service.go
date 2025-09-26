@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
 	"github.com/rwrrioe/geomap/backend/pkg/repository"
+	"gorm.io/gorm"
 )
 
 type HeatMapService struct {
@@ -32,6 +34,8 @@ func (h *HeatMapService) BuildHeatMap(ctx context.Context) error {
 		heatPoint := entities.HeatPoint{
 			Category: p.TypeID,
 			Point: entities.Point{
+				DistrictId: p.DistrictId,
+				Id:         p.ProblemID,
 				Lon:        lon,
 				Lat:        lat,
 				Importance: p.Importance,
@@ -56,17 +60,15 @@ func (h *HeatMapService) BuildHeatMap(ctx context.Context) error {
 
 func (h *HeatMapService) GetHeatMap(ctx context.Context) (*entities.CachedHeatMap, error) {
 	heatmap, err := h.repo.GetHeatMap(ctx)
-	if err != nil {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err := h.BuildHeatMap(ctx)
 		if err != nil {
 			return nil, err
 		}
-
-		heatmap, err := h.GetHeatMap(ctx)
+		heatmap, err := h.repo.GetHeatMap(ctx)
 		if err != nil {
 			return nil, err
 		}
-
 		return heatmap, nil
 	}
 
