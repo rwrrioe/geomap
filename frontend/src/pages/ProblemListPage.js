@@ -15,7 +15,7 @@ export default function ProblemListPage() {
   const districtName = district?.properties?.nameRu || `ID ${districtId}`;
 
   useEffect(() => {
-    fetch(`http://${process.env.REACT_APP_API_URL}/heatmap/districts/${districtId}/problems`)
+    fetch(`${process.env.REACT_APP_API_URL}/heatmap/districts/${districtId}/problems`)
       .then((res) => res.json())
       .then((data) => setProblems(data))
       .catch((err) => console.error("Ошибка загрузки проблем:", err));

@@ -84,7 +84,7 @@ export default function AddProblemPage() {
       }
 
       const res = await fetch(
-        `http://${process.env.REACT_APP_API_URL}/heatmap/districts/${district["osm-relation-id"]}/problems?lat=${lat}&lon=${lon}`,
+        `${process.env.REACT_APP_API_URL}/heatmap/districts/${district["osm-relation-id"]}/problems?lat=${lat}&lon=${lon}`,
         {
           method: "POST",
           body: formData,
