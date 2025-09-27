@@ -24,7 +24,7 @@ func NewProblemService(repo repository.ProblemRepository) *ProblemService {
 	}
 }
 
-func (p *ProblemService) NewProblem(ctx context.Context, req entities.CreateProblemRequest) error {
+func (p *ProblemService) NewProblem(ctx context.Context, req entities.CreateProblemForm) error {
 	point := geom.NewPointFlat(geom.XY, []float64{req.Lon, req.Lat})
 
 	district, err := p.repo.GetDb().FindDistrict(ctx, *point)

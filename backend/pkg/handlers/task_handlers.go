@@ -1,12 +1,14 @@
 package handlers
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
 	"github.com/rwrrioe/geomap/backend/pkg/service"
 )
@@ -292,8 +294,6 @@ func (h *HTTPHandlers) ListProblemsByDistrict(c *gin.Context) {
 		respondError(c, err, http.StatusBadRequest)
 		return
 	}
-
-	log.Println("dist id:", distID.DistrictID)
 	problems, err := h.ProblemService.ListProblemsByDistrict(c, distID.DistrictID)
 	if err != nil {
 		respondError(c, err, http.StatusNotFound)
@@ -319,7 +319,8 @@ failed:
 	response body: json with error, time
 */
 func (h *HTTPHandlers) CreateProblem(c *gin.Context) {
-	var problemRequest entities.CreateProblemRequest
+	var form entities.CreateProblemForm
+
 	lat, err := strconv.ParseFloat(c.Query("lat"), 64)
 	if err != nil {
 		respondError(c, err, http.StatusBadRequest)
@@ -332,19 +333,36 @@ func (h *HTTPHandlers) CreateProblem(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&problemRequest); err != nil {
+	if err := c.ShouldBind(&form); err != nil {
 		respondError(c, err, http.StatusBadRequest)
 		return
 	}
 
-	problemRequest.Lat = lat
-	problemRequest.Lon = lon
+	form.Lat = lat
+	form.Lon = lon
 
-	err = h.ProblemService.NewProblem(c, problemRequest)
+	file, err := c.FormFile("file")
 	if err != nil {
 		respondError(c, err, http.StatusBadRequest)
 		return
 	}
 
-	c.JSON(http.StatusCreated, problemRequest)
+	ext := filepath.Ext(file.Filename)
+	newName := uuid.New().String() + ext
+	savePath := filepath.Join("../../uploads", newName)
+
+	err = c.SaveUploadedFile(file, savePath)
+	if err != nil {
+		respondError(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	form.ImageURL = fmt.Sprintf("http://localhost:8080/uploads/%s", newName)
+	err = h.ProblemService.NewProblem(c, form)
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	c.JSON(http.StatusCreated, form)
 }

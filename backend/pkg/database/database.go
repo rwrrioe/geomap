@@ -43,22 +43,28 @@ func newProblemsResponse() *ProblemsResponse {
 }
 
 func DbConnect() (repository.ProblemRepository, error) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+	port := os.Getenv("DB_PORT")
+
+	if host == "" || user == "" || dbname == "" || port == "" {
+		log.Fatalf("Missing DB environment variables: host=%s user=%s dbname=%s port=%s", host, user, dbname, port)
 	}
 
-	dsnParam := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"))
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		host, user, password, dbname, port)
 
-	dsn := dsnParam
+	log.Println("Connecting to DB with DSN:", dsn)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
 	repo := repository.NewProblemRepo(db)
-	return repo, err
+	return repo, nil
 }
 
 func DbMigrate(r repository.ProblemRepository) error {

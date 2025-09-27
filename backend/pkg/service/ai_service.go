@@ -10,7 +10,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/joho/godotenv"
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
 	"github.com/rwrrioe/geomap/backend/pkg/repository"
 	"google.golang.org/genai"
@@ -76,10 +75,6 @@ func (p *AIPredictService) IsProcessing(id int) bool {
 }
 
 func InitAI(ctx context.Context) (*genai.Client, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load .env")
-	}
-
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
 		log.Fatal("GEMINI_API_KEY is not set")

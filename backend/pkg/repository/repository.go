@@ -69,6 +69,7 @@ func newProblemDTO(ctx context.Context, repo ProblemRepository, p *entities.Prob
 		Geom:         p.Geom,
 		Name:         p.Name,
 		Description:  p.Description,
+		ImageURL:     p.ImageURL,
 		Importance:   p.Importance,
 		TypeID:       p.TypeId,
 
@@ -178,7 +179,7 @@ func (p *ProblemRepo) GetHeatMap(ctx context.Context) (*entities.CachedHeatMap, 
 func (p *ProblemRepo) GetById(ctx context.Context, id int) (*ProblemDTO, error) {
 	var problem entities.Problem
 
-	result := p.Db.WithContext(ctx).First(&problem, id)
+	result := p.Db.WithContext(ctx).Table("problems_with_importance").First(&problem, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}

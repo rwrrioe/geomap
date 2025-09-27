@@ -52,33 +52,55 @@ const DistrictAnalysisPage = () => {
 
   return (
     <div style={{ padding: 16 }}>
-      <Button as={Link} to="/heatmap" variant="secondary" className="mb-3">
-        Back to map
-      </Button>
-      <Card style={{
-  border: "1px solid #ddd",     // чёткая рамка
-  borderRadius: "4px",          // почти квадратные углы (можно "0px" если вообще без скруглений)
-  maxWidth: "800px",            // ограничиваем ширину для удобного чтения
-  margin: "0 auto",             // центрируем
-  boxShadow: "0 2px 6px rgba(0,0,0,0.05)" // лёгкая тень
-}}>
-  <Card.Body>
-    <Card.Title style={{ fontWeight: 600, fontSize: "18px" }}>
-      District analysis — {districtNameEn}
-    </Card.Title>
-    <Card.Text style={{
-      whiteSpace: "pre-wrap",
-      fontSize: "15px",
-      lineHeight: "1.6" // удобное чтение текста
-    }}>
-      {analysis?.extended_answer || JSON.stringify(analysis, null, 2)}
-    </Card.Text>
-  </Card.Body>
-</Card>
+      <Card
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: "4px",
+          maxWidth: "800px",
+          margin: "0 auto",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
+        }}
+      >
+        <Card.Body>
+          <Card.Title style={{ fontWeight: 600, fontSize: "18px" }}>
+            District analysis — {districtNameEn}
+          </Card.Title>
+          <Card.Text
+            style={{
+              whiteSpace: "pre-wrap",
+              fontSize: "15px",
+              lineHeight: "1.6"
+            }}
+          >
+            {analysis?.extended_answer || JSON.stringify(analysis, null, 2)}
+          </Card.Text>
+        </Card.Body>
+      </Card>
 
+      {/* Кнопки снизу */}
+      <div
+        style={{
+          marginTop: "24px",
+          display: "flex",
+          justifyContent: "space-between",
+          maxWidth: "800px",
+          marginLeft: "auto",
+          marginRight: "auto"
+        }}
+      >
+        <Button
+          as={Link}
+          to={`/geomap/heatmap/districts/${districtId}/problems`}
+          variant="primary"
+        >
+          Список проблем
+        </Button>
+        <Button as={Link} to="/geomap/heatmap" variant="secondary">
+          Назад к карте
+        </Button>
+      </div>
     </div>
   );
 };
 
 export default DistrictAnalysisPage;
-

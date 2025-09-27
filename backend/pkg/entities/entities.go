@@ -59,11 +59,11 @@ type ProblemResponseDTO struct {
 	Status      string      `gorm:"status"`
 }
 
-type CreateProblemRequest struct {
-	ProblemName string `json:"problem_name" binding:"required"`
-	ImageURL    string `json:"image_url"`
-	Description string `json:"description"`
-	TypeID      int    `json:"type_id" binding:"required"`
+type CreateProblemForm struct {
+	ProblemName string `form:"problem_name" binding:"required"`
+	ImageURL    string `form:"image_url"`
+	Description string `form:"description"`
+	TypeID      int    `form:"type_id" binding:"required"`
 	Lat         float64
 	Lon         float64
 }
@@ -192,13 +192,4 @@ var ProblemTypeMap = map[int]string{
 	2: "Дороги и транспорт",
 	3: "Гос.сервис",
 	4: "Прочее",
-}
-
-func UnmapProblemType(id int) (string, error) {
-	for k := range ProblemTypeMap {
-		if k == id {
-			return ProblemTypeMap[k], nil
-		}
-	}
-	return "", fmt.Errorf("type key not found ")
 }

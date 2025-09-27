@@ -1,6 +1,8 @@
 package server
 
 import (
+	"log"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/rwrrioe/geomap/backend/pkg/database"
@@ -34,11 +36,16 @@ func (s *HTTPServer) InitServerDefault() error {
 		ProblemService: &ProblemService,
 	}
 
+	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
+	uploadsPath := "root/uploads"
+	log.Println(uploadsPath)
+	engine.Static("/uploads", uploadsPath)
+
 	s.HTTPHandlers = handlers
 
 	engine.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{""},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
