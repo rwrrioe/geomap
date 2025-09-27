@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,7 @@ func NewHTTPServer() *HTTPServer {
 }
 
 func (s *HTTPServer) InitServerDefault() error {
+	frontURL := os.Getenv("FRONT_URL")
 	dbRepo, err := database.DbConnect()
 	if err != nil {
 		return err
@@ -45,7 +47,7 @@ func (s *HTTPServer) InitServerDefault() error {
 	s.HTTPHandlers = handlers
 
 	engine.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{""},
+		AllowOrigins:     []string{frontURL},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
