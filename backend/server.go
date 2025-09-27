@@ -1,7 +1,7 @@
 package server
 
 import (
-	"os"
+	"log"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -20,7 +20,6 @@ func NewHTTPServer() *HTTPServer {
 }
 
 func (s *HTTPServer) InitServerDefault() error {
-	frontURL := os.Getenv("FRONT_URL")
 	dbRepo, err := database.DbConnect()
 	if err != nil {
 		return err
@@ -37,11 +36,16 @@ func (s *HTTPServer) InitServerDefault() error {
 		ProblemService: &ProblemService,
 	}
 
+	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
+	uploadsPath := "root/uploads"
+	log.Println(uploadsPath)
+	engine.Static("/uploads", uploadsPath)
+
 	s.HTTPHandlers = handlers
 
 	engine.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{frontURL},
+		AllowOrigins:     []string{""},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -53,6 +57,9 @@ func (s *HTTPServer) InitServerDefault() error {
 	engine.GET("/heatmap/analysis/district/:districtID", handlers.GetDistrictPrediction)
 	engine.GET("/heatmap/analysis/type/:typeID", handlers.GetTypePrediction)
 	engine.GET("/heatmap/analysis/city/:cityID", handlers.GetPredictByCity)
+	engine.GET("/heatmap/districts/:districtID/problems/:problemID", handlers.GetProblem)
+	engine.GET("/heatmap/districts/:districtID/problems", handlers.ListProblemsByDistrict)
+	engine.POST("/heatmap/districts/:districtID/problems", handlers.CreateProblem)
 	engine.Run(":8080")
 	return nil
 }

@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   app:
     build:
@@ -10,16 +12,21 @@ services:
       - .env
     ports:
       - "8080:8080"
+    volumes:
+      - ./backend/uploads:/root/uploads   
     restart: always
 
   db:
-    image: postgis/postgis:17-3.3
-    container_name: geomap_db
+    image: postgis/postgis:17-3.4
+    container_name: geomapdb
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
 

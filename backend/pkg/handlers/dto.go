@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type districtID struct {
+	DistrictID int `uri:"districtID" binding:"required"`
+}
+
 type errDTO struct {
 	Message string
 	Time    time.Time

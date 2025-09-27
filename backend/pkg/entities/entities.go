@@ -42,6 +42,7 @@ type Problem struct {
 	Geom        georm.Point `gorm:"type:geometry(Point,4326)"`
 	Name        string      `gorm:"not null"`
 	Description string      `gorm:"not null"`
+	ImageURL    string      `gorm:"column:image_url"`
 	Importance  float64     `gorm:"not null"`
 	Status      string      `gorm:"not null"`
 	TypeId      int         `gorm:"not null"`
@@ -58,13 +59,18 @@ type ProblemResponseDTO struct {
 	Status      string      `gorm:"status"`
 }
 
-type CreateProblemRequest struct {
-	ProblemID   int     `json:"name" binding:"required"`
-	ProblemName string  `json:"problem_name" binding:"required"`
-	Description string  `json:"description"`
-	TypeID      int     `json:"type_id" binding:"required"`
-	Lat         float64 `json:"lat" binding:"required"`
-	Lon         float64 `json:"lon" binding:"required"`
+type CreateProblemForm struct {
+	ProblemName string `form:"problem_name" binding:"required"`
+	ImageURL    string `form:"image_url"`
+	Description string `form:"description"`
+	TypeID      int    `form:"type_id" binding:"required"`
+	Lat         float64
+	Lon         float64
+}
+
+type ProblemType struct {
+	TypeId   int    `gorm:"primaryKey;column:type_id"`
+	TypeName string `gorm:"column:type"`
 }
 
 func MapToDistinct(dto DistrictDTO) *District {
@@ -138,6 +144,8 @@ type HeatPoint struct {
 }
 
 type Point struct {
+	DistrictId int     `json:"district_id"`
+	Id         int     `json:"problem_id"`
 	Lon        float64 `json:"lon"`
 	Lat        float64 `json:"lat"`
 	Importance float64 `json:"importance"`
@@ -184,13 +192,4 @@ var ProblemTypeMap = map[int]string{
 	2: "Дороги и транспорт",
 	3: "Гос.сервис",
 	4: "Прочее",
-}
-
-func UnmapProblemType(id int) (string, error) {
-	for k := range ProblemTypeMap {
-		if k == id {
-			return ProblemTypeMap[k], nil
-		}
-	}
-	return "", fmt.Errorf("type key not found ")
 }

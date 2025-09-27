@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rwrrioe/geomap/backend/pkg/entities"
 	"github.com/rwrrioe/geomap/backend/pkg/service"
 )
@@ -146,7 +149,6 @@ method:  GET
 info:	 parameters from path
 
 succeed:
-
 	status code: 200 OK
 	response body: json represents extended analysis
 
@@ -237,4 +239,130 @@ func (h *HTTPHandlers) GetPredictByCity(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, prediction)
+}
+
+/*
+pattern: /heatmap/problems/:problemID
+method:  GET
+info:	 parameters from path
+
+succeed:
+
+	status code: 200 OK
+	response body: json represents problem
+
+failed:
+
+	status code: 500, 400 ...
+	response body: json with error, time
+*/
+func (h *HTTPHandlers) GetProblem(c *gin.Context) {
+	problemID, err := strconv.Atoi(c.Param("problemID"))
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	problem, err := h.ProblemService.GetProblem(c, problemID)
+	if err != nil {
+		respondError(c, err, http.StatusNotFound)
+		return
+	}
+
+	c.JSON(http.StatusOK, problem)
+}
+
+/*
+pattern: heatmap/districts/:districtID/problems
+method:  GET
+info:	 parameters in path
+
+succeed:
+
+	status code: 200 OK
+	response body: json represents district problems
+
+failed:
+
+	status code: 500, 400 ...
+	response body: json with error, time
+*/
+func (h *HTTPHandlers) ListProblemsByDistrict(c *gin.Context) {
+	var distID districtID
+
+	if err := c.ShouldBindUri(&distID); err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+	problems, err := h.ProblemService.ListProblemsByDistrict(c, distID.DistrictID)
+	if err != nil {
+		respondError(c, err, http.StatusNotFound)
+		return
+	}
+
+	c.JSON(http.StatusOK, problems)
+}
+
+/*
+pattern: heatmap/districts/:districtID/problems?lat=123&lon=456
+method:  POST
+info:	 parameters in path + query params
+
+succeed:
+
+	status code: 201 created
+	response body: json represents created problem
+
+failed:
+
+	status code: 500, 400 ...
+	response body: json with error, time
+*/
+func (h *HTTPHandlers) CreateProblem(c *gin.Context) {
+	var form entities.CreateProblemForm
+
+	lat, err := strconv.ParseFloat(c.Query("lat"), 64)
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	lon, err := strconv.ParseFloat(c.Query("lon"), 64)
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	if err := c.ShouldBind(&form); err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	form.Lat = lat
+	form.Lon = lon
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	ext := filepath.Ext(file.Filename)
+	newName := uuid.New().String() + ext
+	savePath := filepath.Join("../../uploads", newName)
+
+	err = c.SaveUploadedFile(file, savePath)
+	if err != nil {
+		respondError(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	form.ImageURL = fmt.Sprintf("http://localhost:8080/uploads/%s", newName)
+	err = h.ProblemService.NewProblem(c, form)
+	if err != nil {
+		respondError(c, err, http.StatusBadRequest)
+		return
+	}
+
+	c.JSON(http.StatusCreated, form)
 }

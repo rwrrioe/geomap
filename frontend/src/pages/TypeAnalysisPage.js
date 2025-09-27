@@ -29,7 +29,7 @@ const TypeAnalysisPage = () => {
   if (loading) return <SpinnerOverlay text="Generating type analysis..." />;
   return (
     <div style={{ padding: 16 }}>
-      <Button as={Link} to="/heatmap" variant="secondary" className="mb-3">Back to map</Button>
+      <Button as={Link} to="/geomap/heatmap" variant="secondary" className="mb-3">Back to map</Button>
       <Card>
         <Card.Body>
           <Card.Title>Type analysis — {typeId}</Card.Title>
