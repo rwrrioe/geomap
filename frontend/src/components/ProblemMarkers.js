@@ -29,7 +29,7 @@ export default function ProblemMarkers({ map, points, geoJsonFeatures }) {
       }).addTo(map);
 
       marker.on("click", () => {
-        window.open(`/heatmap/district/${districtId}/problems/${problemId}`, "_blank");
+        window.open(`/geomap/heatmap/district/${districtId}/problems/${problemId}`, "_blank");
       });
 
       markers.push(marker);

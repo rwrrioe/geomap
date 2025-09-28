@@ -84,7 +84,7 @@ export default function AddProblemPage() {
       }
 
       const res = await fetch(
-        `http://${process.env.REACT_APP_API_URL}/heatmap/districts/${district["osm-relation-id"]}/problems?lat=${lat}&lon=${lon}`,
+        `${process.env.REACT_APP_API_URL}/heatmap/districts/${district["osm-relation-id"]}/problems?lat=${lat}&lon=${lon}`,
         {
           method: "POST",
           body: formData,
@@ -101,7 +101,7 @@ export default function AddProblemPage() {
       setSuccess("Проблема успешно создана!");
       setTimeout(() => {
         navigate(
-          `/geomap/heatmap/districts/${district["osm-relation-id"]}/problems/`
+          `/heatmap/districts/${district["osm-relation-id"]}/problems/`
         );
       }, 1500);
     } catch (err) {

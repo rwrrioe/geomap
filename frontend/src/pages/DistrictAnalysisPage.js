@@ -90,12 +90,12 @@ const DistrictAnalysisPage = () => {
       >
         <Button
           as={Link}
-          to={`/geomap/heatmap/districts/${districtId}/problems`}
+          to={`/heatmap/districts/${districtId}/problems`}
           variant="primary"
         >
           Список проблем
         </Button>
-        <Button as={Link} to="/geomap/heatmap" variant="secondary">
+        <Button as={Link} to="/heatmap" variant="secondary">
           Назад к карте
         </Button>
       </div>

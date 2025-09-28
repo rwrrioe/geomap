@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/geomap/static/css/main.80b0ef2c.css",
-    "main.js": "/geomap/static/js/main.9a03a9b9.js",
+    "main.js": "/geomap/static/js/main.e6e2f46f.js",
     "index.html": "/geomap/index.html",
     "main.80b0ef2c.css.map": "/geomap/static/css/main.80b0ef2c.css.map",
-    "main.9a03a9b9.js.map": "/geomap/static/js/main.9a03a9b9.js.map"
+    "main.e6e2f46f.js.map": "/geomap/static/js/main.e6e2f46f.js.map"
   },
   "entrypoints": [
     "static/css/main.80b0ef2c.css",
-    "static/js/main.9a03a9b9.js"
+    "static/js/main.e6e2f46f.js"
   ]
 }

@@ -97,7 +97,7 @@ export default function HeatmapPage() {
         return;
       }
 
-      navigate(`/geomap/heatmap/districts/${districtId}/problems/new?lat=${lat}&lon=${lng}`);
+      navigate(`/heatmap/districts/${districtId}/problems/new?lat=${lat}&lon=${lng}`);
       setAddingMode(false);
     };
 
@@ -262,7 +262,7 @@ useEffect(() => {
         <Container>
           <Navbar.Brand
             style={{ cursor: "pointer", fontWeight: 700, fontSize: 20 }}
-            onClick={() => navigate("/geomap/heatmap/analysis/city/-1")}
+            onClick={() => navigate("/heatmap/analysis/city/-1")}
           >
             Almaty Problems Geomap
           </Navbar.Brand>
