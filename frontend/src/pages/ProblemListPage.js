@@ -24,7 +24,7 @@ export default function ProblemListPage() {
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
       <button
-        onClick={() => navigate("/geomap/heatmap")}
+        onClick={() => navigate("/heatmap")}
         style={{
           marginBottom: "20px",
           padding: "8px 16px",

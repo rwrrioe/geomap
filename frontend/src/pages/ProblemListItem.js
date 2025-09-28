@@ -15,7 +15,7 @@ export default function ProblemListItem({ problem, districtId }) {
   return (
     <div
       onClick={() =>
-        navigate(`/geomap/heatmap/districts/${districtId}/problems/${problem.problem_id}`)
+        navigate(`/heatmap/districts/${districtId}/problems/${problem.problem_id}`)
       }
       style={{
         display: "flex",

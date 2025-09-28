@@ -101,7 +101,7 @@ export default function AddProblemPage() {
       setSuccess("Проблема успешно создана!");
       setTimeout(() => {
         navigate(
-          `/geomap/heatmap/districts/${district["osm-relation-id"]}/problems/`
+          `/heatmap/districts/${district["osm-relation-id"]}/problems/`
         );
       }, 1500);
     } catch (err) {

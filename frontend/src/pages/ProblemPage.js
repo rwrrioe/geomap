@@ -87,7 +87,7 @@ export default function ProblemPage() {
   return (
     <Container style={{ maxWidth: "900px", padding: "20px" }}>
       <button
-        onClick={() => navigate(`/geomap/heatmap/districts/${districtId}/problems`)}
+        onClick={() => navigate(`/heatmap/districts/${districtId}/problems`)}
         style={{
           marginBottom: "20px",
           padding: "8px 16px",
